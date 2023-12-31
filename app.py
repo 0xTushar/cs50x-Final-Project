@@ -1,7 +1,9 @@
 import os
 from flask import Flask, render_template, request, jsonify, g, send_from_directory
-from helpers import check_pdf_upload
+from helpers import check_pdf_upload, upload_pdf
 import fitz  # PyMuPDF
+from PIL import Image
+import pytesseract
 
 # configure application
 app = Flask(__name__)
@@ -50,12 +52,6 @@ def images():
         for page_index in range(len(pdf)):  # iterate over pdf pages
             page = pdf[page_index]  # get the page
             image_list = page.get_images()
-
-            # print the number of images found on the page
-            if image_list:
-                print(f"Found {len(image_list)} images on page {page_index}")
-            else:
-                print("No images found on page", page_index)
             images = []
             # enumerate the image list
             for image_index, img in enumerate(image_list, start=1):
@@ -80,7 +76,21 @@ def images():
 def merge():
     if request.method == "POST":
         pdf_file = getattr(g, 'pdf', None)
-        return ""
+        another_pdf_file = upload_pdf('pdf_2')
+        if not another_pdf_file:
+            return jsonify({'error': 'Need 2 PDF file'}), 400
+
+        pdf = fitz.open(pdf_file)
+        pdf_2 = fitz.open(another_pdf_file)
+
+        pdf.insert_pdf(pdf_2)
+        output = f"users/{getattr(g, 'file_id', 'example')}.pdf"
+        pdf.save(output)
+
+        pdf.close()
+        pdf_2.close()
+        os.remove(another_pdf_file)
+        return jsonify({'file': output}), 200
     else:
         return render_template('merge.html')
 
@@ -90,7 +100,21 @@ def merge():
 def ocr():
     if request.method == "POST":
         pdf_file = getattr(g, 'pdf', None)
-        return ""
+        pdf = fitz.open(pdf_file)
+        text = ""
+        for page_index in range(len(pdf)):  # iterate over pdf pages
+            page = pdf[page_index]
+            pix = page.get_pixmap()
+            image = Image.frombytes(
+                "RGB", [pix.width, pix.height], pix.samples)
+            text += pytesseract.image_to_string(image,
+                                                lang='eng', config=r'--psm 6')
+
+        output = f"users/{getattr(g, 'file_id', 'example')}.txt"
+        with open(output, 'w', encoding='utf-8') as file:
+            file.write(text)
+
+        return jsonify({'file': output}), 200
     else:
         return render_template('ocr.html')
 

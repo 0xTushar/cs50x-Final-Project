@@ -36,6 +36,29 @@ def check_pdf_upload(f):
     return decorated_function
 
 
+def upload_pdf(name):
+    if name not in request.files:
+        return False
+
+    pdf = request.files[name]
+
+    if pdf.filename == '':
+        return False
+
+    if pdf and pdf.filename.endswith(".pdf"):
+        filename = secure_filename(pdf.filename)
+        random = str(uuid.uuid4().hex)
+        temp = os.path.join('uploads', f'{random}_{filename}')
+        pdf.save(temp)
+        random = calculate_file_hash(temp, 'md5')
+        pdf_location = os.path.join('uploads', f'{random}_{filename}')
+        os.rename(temp, pdf_location)
+
+        return pdf_location
+
+    return False
+
+
 def calculate_file_hash(file_path, hash_algorithm):
     # Initialize the hash object for the specified algorithm
     hasher = hashlib.new(hash_algorithm)
