@@ -50,7 +50,7 @@
           </nav>
         </div>
       </header>
-
+      <div class="loader" id="loader" style="display:none"></div>
       <main class="px-3 m-auto">{% block main %} {% endblock %}</main>
 
       <footer
@@ -131,18 +131,46 @@
               }
               
             }
-            
+
+            document.getElementById('loader').style = "display:block"
+         
             const res = await fetch('', {
               method:'POST',
               body: formData,
             })
             const data = await res.json()
+            if (data?.file) {
+              const download = document.createElement("a")
+              download.id = 'download-button'
+              download.href = `/${data.file}`
+              download.download = true
+              download.innerHTML = ` <i class="bi bi-download"></i>
+              <span>Download File</span>`
+              document.getElementById('upload-button').style = "display:none"
+              document.getElementById('upload-button').parentElement.appendChild(download)
+            }
+
+            if (data?.images) {
+              const preview = document.createElement("div")
+              preview.className = "d-flex align-items-center justify-content-around"
+              let images = ''
+              data.images.forEach(image => {
+                images += `<a href="/${image}" target="_blank" ><img src="/${image}" /></a>`
+              })
+              preview.innerHTML = images
+
+              document.getElementById('upload-button').style = "display:none"
+              document.getElementById('upload-button').parentElement.appendChild(preview)
+            }
+            
+            document.getElementById('loader').style = "display:none"
+          //  turn of loader
           });
 
         }
 
         hiddenInput.click();
-
+        hiddenInput.value = ""
         });
     </script>
   </body>
