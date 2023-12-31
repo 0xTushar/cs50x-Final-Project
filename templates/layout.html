@@ -105,14 +105,44 @@
             input.type = "file";
             input.id = "file-input";
             input.accept = ".pdf";
+            if (window.location.pathname == '/merge-pdf') {
+              input.multiple = true
+            }
             document.getElementsByTagName("section")[0].appendChild(input);
             hiddenInput = document.getElementById("file-input");
-          }
+        
+          hiddenInput.addEventListener("change", async (e) => {
+            const files = e.target.files
+            const filesLength = files.length
 
-          hiddenInput.click();
-          hiddenInput.addEventListener("change", (e) => {
-            console.log("changed");
+            if (!filesLength) return alert("No File Selected")
+            
+            const formData = new FormData()
+            formData.append('pdf', files[0])
+            
+            if(e.target.multiple && filesLength <= 1) {
+              alert("Minimum 2 PDF required for merging!")
+              return
+            }
+
+            if (filesLength > 1) {
+              for (let i = 1; i < filesLength; i++) {
+                formData.append(`pdf_${i}`, files[i])
+              }
+              
+            }
+            
+            const res = await fetch('', {
+              method:'POST',
+              body: formData,
+            })
+            const data = await res.json()
           });
+
+        }
+
+        hiddenInput.click();
+
         });
     </script>
   </body>

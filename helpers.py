@@ -50,11 +50,8 @@ def upload_pdf(name):
         random = str(uuid.uuid4().hex)
         temp = os.path.join('uploads', f'{random}_{filename}')
         pdf.save(temp)
-        random = calculate_file_hash(temp, 'md5')
-        pdf_location = os.path.join('uploads', f'{random}_{filename}')
-        os.rename(temp, pdf_location)
 
-        return pdf_location
+        return temp
 
     return False
 

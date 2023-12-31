@@ -76,20 +76,25 @@ def images():
 def merge():
     if request.method == "POST":
         pdf_file = getattr(g, 'pdf', None)
-        another_pdf_file = upload_pdf('pdf_2')
-        if not another_pdf_file:
-            return jsonify({'error': 'Need 2 PDF file'}), 400
-
         pdf = fitz.open(pdf_file)
-        pdf_2 = fitz.open(another_pdf_file)
 
-        pdf.insert_pdf(pdf_2)
+        for i in range(len(request.files)):
+            if i == 0:
+                continue
+            another_pdf_file = upload_pdf(f"pdf_{i}")
+            if not another_pdf_file:
+                return jsonify({'error': 'Need 2 PDF file'}), 400
+
+            pdf_2 = fitz.open(another_pdf_file)
+
+            pdf.insert_pdf(pdf_2)
+            pdf_2.close()
+            os.remove(another_pdf_file)
         output = f"users/{getattr(g, 'file_id', 'example')}.pdf"
         pdf.save(output)
 
         pdf.close()
-        pdf_2.close()
-        os.remove(another_pdf_file)
+
         return jsonify({'file': output}), 200
     else:
         return render_template('merge.html')
