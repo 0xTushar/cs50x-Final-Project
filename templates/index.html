@@ -1,0 +1,41 @@
+{% extends "layout.html" %} {% block title %} PDF Tools Online {% endblock %} {%
+block main %}
+<section class="px-4 py-5 my-5 text-center">
+  <h1 class="display-5 fw-bold">PDF Tools Online</h1>
+  <div class="col-lg-6 mx-auto">
+    <p class="lead mb-4">
+      Free and easy-to-use online PDF tools that make you more productive
+    </p>
+  </div>
+</section>
+<section class="">
+  <div class="mb-4">Popular PDF Tools</div>
+  <div class="d-flex flex-wrap justify-content-center">
+    <a
+      href="/extract-pdf-text"
+      class="d-flex flex-column align-items-center item"
+    >
+      <i class="icons svg-extract-text mb-2"></i>
+      <span>Extract Text</span></a
+    >
+
+    <a
+      href="/extract-pdf-images"
+      class="d-flex flex-column align-items-center item"
+    >
+      <i class="icons svg-extract-images mb-2"></i>
+      <span>Extract images</span></a
+    >
+
+    <a href="/merge-pdf" class="d-flex flex-column align-items-center item">
+      <i class="icons svg-merge-pdf mb-2"></i>
+      <span>Merge PDF</span></a
+    >
+
+    <a href="/ocr-pdf" class="d-flex flex-column align-items-center item">
+      <i class="icons svg-pdf-ocr mb-2"></i>
+      <span>PDF OCR</span></a
+    >
+  </div>
+</section>
+{% endblock %}
