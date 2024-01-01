@@ -2,3 +2,5 @@ Flask
 pymupdf
 pytesseract
 Pillow 
+APScheduler
+Werkzeug

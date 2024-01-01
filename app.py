@@ -1,12 +1,17 @@
-import os
+import fitz  # PyMuPDF
 from flask import Flask, render_template, request, jsonify, g, send_from_directory
 from helpers import check_pdf_upload, upload_pdf
-import fitz  # PyMuPDF
 from PIL import Image
+import os
 import pytesseract
+
+from datetime import datetime, timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 
 # configure application
 app = Flask(__name__)
+scheduler = BackgroundScheduler(daemon=True)
 
 
 @app.after_request
@@ -36,6 +41,7 @@ def text():
         output = f"users/{getattr(g, 'file_id', 'example')}.txt"
         with open(output, 'w', encoding='utf-8') as file:
             file.write(plain_text)
+        delete_files([output])
 
         return jsonify({'file': output}), 200
 
@@ -65,7 +71,7 @@ def images():
                 pix.save(image)  # save the image as png
                 images.append(image)
                 pix = None
-
+            delete_files(images)
         return jsonify({'images': images}), 200
     else:
         return render_template('images.html')
@@ -94,6 +100,7 @@ def merge():
         pdf.save(output)
 
         pdf.close()
+        delete_files([output])
 
         return jsonify({'file': output}), 200
     else:
@@ -118,6 +125,7 @@ def ocr():
         output = f"users/{getattr(g, 'file_id', 'example')}.txt"
         with open(output, 'w', encoding='utf-8') as file:
             file.write(text)
+        delete_files([output])
 
         return jsonify({'file': output}), 200
     else:
@@ -131,6 +139,21 @@ def ocr():
 def uploaded_file(filename):
     return send_from_directory('users', filename)
 
+
+def delete_files(files):
+    for file in files:
+        current_time = datetime.now()
+        run_date = current_time + timedelta(minutes=120)
+        scheduler.add_job(delete_file, 'date',
+                          run_date=run_date, args=[file])
+
+
+def delete_file(file):
+    os.remove(file)
+
+
+scheduler.start()
+atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == '__main__':
     app.run(debug=True)
