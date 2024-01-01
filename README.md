@@ -4,8 +4,6 @@
 
 #### Description:
 
-This is an PDF Tools website written in python with flask, html, css and javascript.
-
 Free and easy-to-use online PDF tools that make you more productive
 
 ![image](https://github.com/0xTushar/cs50x-Final-Project/assets/55528085/69f085bf-9c9e-435c-8926-61dc0696ed3c)
